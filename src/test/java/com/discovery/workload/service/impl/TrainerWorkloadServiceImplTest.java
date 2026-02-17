@@ -1,13 +1,13 @@
 package com.discovery.workload.service.impl;
 
-import com.discovery.workload.dto.MonthlySummaryResponse;
 import com.discovery.workload.dto.TrainerWorkloadRequest;
-import com.discovery.workload.dto.TrainerYearlySummaryResponse;
 import com.discovery.workload.entity.ProcessedEventEntity;
 import com.discovery.workload.entity.TrainerMonthKey;
 import com.discovery.workload.entity.TrainerMonthlySummary;
 import com.discovery.workload.exception.NotFoundException;
 import com.discovery.workload.model.ActionType;
+import com.discovery.workload.model.MonthlySummary;
+import com.discovery.workload.model.TrainerYearlySummary;
 import com.discovery.workload.repository.ProcessedEventRepository;
 import com.discovery.workload.repository.TrainerMonthlySummaryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -61,10 +59,7 @@ class TrainerWorkloadServiceImplTest {
         when(repository.save(any(TrainerMonthlySummary.class))).thenAnswer(inv -> inv.getArgument(0));
         when(processedEventRepository.save(any(ProcessedEventEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ResponseEntity<?> res = service.applyEvent("   ", baseRequest);
-
-        assertEquals(HttpStatus.OK, res.getStatusCode());
-        assertEquals("Saved", res.getBody());
+        assertDoesNotThrow(() -> service.applyEvent("   ", baseRequest));
 
         verify(processedEventRepository).existsById(anyString());
         verify(repository).save(any(TrainerMonthlySummary.class));
@@ -72,12 +67,10 @@ class TrainerWorkloadServiceImplTest {
     }
 
     @Test
-    void applyEvent_duplicateEventId_returnsOkAndDoesNotSaveSummaryOrProcessedEvent() {
+    void applyEvent_duplicateEventId_returnsAndDoesNotSaveSummaryOrProcessedEvent() {
         when(processedEventRepository.existsById("evt-1")).thenReturn(true);
 
-        ResponseEntity<?> res = service.applyEvent("evt-1", baseRequest);
-
-        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertDoesNotThrow(() -> service.applyEvent("evt-1", baseRequest));
 
         verify(processedEventRepository).existsById("evt-1");
         verifyNoInteractions(repository);
@@ -85,7 +78,7 @@ class TrainerWorkloadServiceImplTest {
     }
 
     @Test
-    void applyEvent_pastDate_returnsBadRequest() {
+    void applyEvent_pastDate_throwsIllegalArgumentException() {
         when(processedEventRepository.existsById("evt-1")).thenReturn(false);
 
         TrainerWorkloadRequest req = TrainerWorkloadRequest.builder()
@@ -99,10 +92,11 @@ class TrainerWorkloadServiceImplTest {
                 .actionType(ActionType.ADD)
                 .build();
 
-        ResponseEntity<?> res = service.applyEvent("evt-1", req);
-
-        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
-        assertEquals("Event cannot be in the past", res.getBody());
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.applyEvent("evt-1", req)
+        );
+        assertEquals("Event cannot be in the past", ex.getMessage());
 
         verify(processedEventRepository).existsById("evt-1");
         verifyNoInteractions(repository);
@@ -117,10 +111,7 @@ class TrainerWorkloadServiceImplTest {
         ArgumentCaptor<TrainerMonthlySummary> summaryCaptor = ArgumentCaptor.forClass(TrainerMonthlySummary.class);
         when(repository.save(summaryCaptor.capture())).thenAnswer(inv -> inv.getArgument(0));
 
-        ResponseEntity<?> res = service.applyEvent("evt-1", baseRequest);
-
-        assertEquals(HttpStatus.OK, res.getStatusCode());
-        assertEquals("Saved", res.getBody());
+        assertDoesNotThrow(() -> service.applyEvent("evt-1", baseRequest));
 
         TrainerMonthlySummary saved = summaryCaptor.getValue();
         assertEquals("john", saved.getId().getUsername());
@@ -163,9 +154,7 @@ class TrainerWorkloadServiceImplTest {
                 .actionType(ActionType.DELETE)
                 .build();
 
-        ResponseEntity<?> res = service.applyEvent("evt-1", req);
-
-        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertDoesNotThrow(() -> service.applyEvent("evt-1", req));
 
         assertEquals("John", existing.getFirstName());
         assertEquals("Doe", existing.getLastName());
@@ -177,7 +166,7 @@ class TrainerWorkloadServiceImplTest {
     }
 
     @Test
-    void getMonthlySummary_found_returnsMappedDto() {
+    void getMonthlySummary_found_returnsModel() {
         TrainerMonthKey key = new TrainerMonthKey("john", 2026, 2);
 
         TrainerMonthlySummary row = TrainerMonthlySummary.builder()
@@ -190,7 +179,7 @@ class TrainerWorkloadServiceImplTest {
 
         when(repository.findById(key)).thenReturn(Optional.of(row));
 
-        MonthlySummaryResponse res = service.getMonthlySummary("john", 2026, 2);
+        MonthlySummary res = service.getMonthlySummary("john", 2026, 2);
 
         assertEquals("john", res.getUsername());
         assertEquals("John", res.getFirstName());
@@ -240,7 +229,7 @@ class TrainerWorkloadServiceImplTest {
         when(repository.findAllByIdUsernameOrderByIdYearAscIdMonthAsc("john"))
                 .thenReturn(List.of(feb2025, mar2026, jan2026));
 
-        TrainerYearlySummaryResponse res = service.getTrainerSummary("john");
+        TrainerYearlySummary res = service.getTrainerSummary("john");
 
         assertEquals("john", res.getTrainerUsername());
         assertEquals("John", res.getTrainerFirstName());
@@ -249,13 +238,13 @@ class TrainerWorkloadServiceImplTest {
 
         assertEquals(2, res.getYears().size());
 
-        TrainerYearlySummaryResponse.YearDto y2025 = res.getYears().get(0);
+        TrainerYearlySummary.Year y2025 = res.getYears().get(0);
         assertEquals(2025, y2025.getYear());
         assertEquals(1, y2025.getMonths().size());
         assertEquals("Feb", y2025.getMonths().get(0).getMonth());
         assertEquals(20, y2025.getMonths().get(0).getTrainingSummaryDurationMinutes());
 
-        TrainerYearlySummaryResponse.YearDto y2026 = res.getYears().get(1);
+        TrainerYearlySummary.Year y2026 = res.getYears().get(1);
         assertEquals(2026, y2026.getYear());
 
         assertEquals(2, y2026.getMonths().size());

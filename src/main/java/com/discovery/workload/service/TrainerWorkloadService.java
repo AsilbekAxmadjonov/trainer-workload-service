@@ -1,15 +1,14 @@
 package com.discovery.workload.service;
 
-import com.discovery.workload.dto.MonthlySummaryResponse;
 import com.discovery.workload.dto.TrainerWorkloadRequest;
-import com.discovery.workload.dto.TrainerYearlySummaryResponse;
-import org.springframework.http.ResponseEntity;
+import com.discovery.workload.model.MonthlySummary;
+import com.discovery.workload.model.TrainerYearlySummary;
 
 public interface TrainerWorkloadService {
 
-    ResponseEntity<?> applyEvent(String eventId, TrainerWorkloadRequest request);
+    void applyEvent(String eventId, TrainerWorkloadRequest request);
 
-    MonthlySummaryResponse getMonthlySummary(String username, int year, int month);
+    MonthlySummary getMonthlySummary(String username, int year, int month);
 
-    TrainerYearlySummaryResponse getTrainerSummary(String username);
+    TrainerYearlySummary getTrainerSummary(String username);
 }

@@ -3,6 +3,10 @@ package com.discovery.workload.controller;
 import com.discovery.workload.dto.MonthlySummaryResponse;
 import com.discovery.workload.dto.TrainerWorkloadRequest;
 import com.discovery.workload.dto.TrainerYearlySummaryResponse;
+import com.discovery.workload.mapper.MonthlySummaryMapper;
+import com.discovery.workload.mapper.TrainerYearlySummaryMapper;
+import com.discovery.workload.model.MonthlySummary;
+import com.discovery.workload.model.TrainerYearlySummary;
 import com.discovery.workload.service.TrainerWorkloadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,29 +21,37 @@ import org.springframework.web.bind.annotation.*;
 public class TrainerWorkloadController {
 
     private final TrainerWorkloadService trainerWorkloadService;
+    private final MonthlySummaryMapper monthlySummaryMapper;
+    private final TrainerYearlySummaryMapper trainerYearlySummaryMapper;
 
     @PostMapping("/events")
-    public ResponseEntity<?> applyEvent(
-            @RequestHeader(name = "X-Event-Id", required = false) String eventId,
+    public ResponseEntity<Void> applyEvent(
+            @RequestHeader(value = "X-Event-Id", required = false) String eventId,
             @Valid @RequestBody TrainerWorkloadRequest request
     ) {
-        return trainerWorkloadService.applyEvent(eventId, request);
+        trainerWorkloadService.applyEvent(eventId, request);
+        return ResponseEntity.ok().build();
     }
 
 
     @GetMapping("/{username}/{year}/{month}")
-    public ResponseEntity<MonthlySummaryResponse> getMonthlySummary(
+    public ResponseEntity<MonthlySummaryResponse> getMonthly(
             @PathVariable String username,
             @PathVariable int year,
             @PathVariable int month
     ) {
-        MonthlySummaryResponse res = trainerWorkloadService.getMonthlySummary(username, year, month);
-        return ResponseEntity.ok(res);
+        MonthlySummary model = trainerWorkloadService.getMonthlySummary(username, year, month);
+        MonthlySummaryResponse response = monthlySummaryMapper.toResponse(model);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/trainers/{username}/summary")
-    public TrainerYearlySummaryResponse getTrainerSummary(@PathVariable String username) {
-        return trainerWorkloadService.getTrainerSummary(username);
+    public ResponseEntity<TrainerYearlySummaryResponse> getYearly(
+            @PathVariable String username
+    ) {
+        TrainerYearlySummary model = trainerWorkloadService.getTrainerSummary(username);
+        TrainerYearlySummaryResponse response = trainerYearlySummaryMapper.toResponse(model);
+        return ResponseEntity.ok(response);
     }
 
 

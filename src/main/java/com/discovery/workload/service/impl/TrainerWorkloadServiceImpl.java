@@ -8,12 +8,13 @@ import com.discovery.workload.entity.TrainerMonthKey;
 import com.discovery.workload.entity.TrainerMonthlySummary;
 import com.discovery.workload.exception.NotFoundException;
 import com.discovery.workload.model.ActionType;
+import com.discovery.workload.model.MonthlySummary;
+import com.discovery.workload.model.TrainerYearlySummary;
 import com.discovery.workload.repository.ProcessedEventRepository;
 import com.discovery.workload.repository.TrainerMonthlySummaryRepository;
 import com.discovery.workload.service.TrainerWorkloadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,24 +36,24 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> applyEvent(String eventId, TrainerWorkloadRequest request) {
+    public void applyEvent(String eventId, TrainerWorkloadRequest request) {
 
         if (eventId == null || eventId.isBlank()) {
-            // This is allowed, BUT retries won't be idempotent
-            eventId = java.util.UUID.randomUUID().toString();
+            eventId = UUID.randomUUID().toString();
             log.warn("Missing X-Event-Id header. Generated new eventId={}", eventId);
         }
 
         if (processedEventRepository.existsById(eventId)) {
             log.info("Duplicate event ignored. eventId={}", eventId);
-            return ResponseEntity.ok().build();
+            return; // idempotent: do nothing
         }
 
         LocalDate date = request.getTrainingDate();
-        if(date.isBefore(LocalDate.now())){
+        if (date.isBefore(LocalDate.now())) {
             log.error("Event cannot be in the past");
-            return ResponseEntity.badRequest().body("Event cannot be in the past");
+            throw new IllegalArgumentException("Event cannot be in the past");
         }
+
         int year = date.getYear();
         int month = date.getMonthValue();
 
@@ -78,17 +79,12 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
         else summary.subtractDuration(duration);
 
         repository.save(summary);
-
         processedEventRepository.save(new ProcessedEventEntity(eventId, request.getTrainingId()));
-
-        return ResponseEntity.ok().body("Saved");
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
-    public MonthlySummaryResponse getMonthlySummary(String username, int year, int month) {
+    public MonthlySummary getMonthlySummary(String username, int year, int month) {
 
         TrainerMonthKey key = new TrainerMonthKey(username, year, month);
 
@@ -97,7 +93,7 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
                         "No summary found for username=%s year=%d month=%d".formatted(username, year, month)
                 ));
 
-        return MonthlySummaryResponse.builder()
+        return MonthlySummary.builder()
                 .username(summary.getId().getUsername())
                 .firstName(summary.getFirstName())
                 .lastName(summary.getLastName())
@@ -109,9 +105,10 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
     }
 
 
+
     @Override
     @Transactional(readOnly = true)
-    public TrainerYearlySummaryResponse getTrainerSummary(String username) {
+    public TrainerYearlySummary getTrainerSummary(String username) {
 
         List<TrainerMonthlySummary> rows =
                 repository.findAllByIdUsernameOrderByIdYearAscIdMonthAsc(username);
@@ -120,34 +117,34 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
             throw new NotFoundException("No summary found for username=" + username);
         }
 
-        // take trainer info from the latest row (or first row; they should match)
         TrainerMonthlySummary any = rows.get(rows.size() - 1);
-
         String status = any.isActive() ? "ACTIVE" : "INACTIVE";
 
         Map<Integer, List<TrainerMonthlySummary>> byYear =
-                rows.stream().collect(Collectors.groupingBy(r -> r.getId().getYear(), LinkedHashMap::new, Collectors.toList()));
+                rows.stream().collect(Collectors.groupingBy(
+                        r -> r.getId().getYear(), LinkedHashMap::new, Collectors.toList()
+                ));
 
-        List<TrainerYearlySummaryResponse.YearDto> years = new ArrayList<>();
+        List<TrainerYearlySummary.Year> years = new ArrayList<>();
 
         for (Map.Entry<Integer, List<TrainerMonthlySummary>> entry : byYear.entrySet()) {
             int year = entry.getKey();
 
-            List<TrainerYearlySummaryResponse.MonthDto> months = entry.getValue().stream()
+            List<TrainerYearlySummary.Month> months = entry.getValue().stream()
                     .sorted(Comparator.comparingInt(r -> r.getId().getMonth()))
-                    .map(r -> TrainerYearlySummaryResponse.MonthDto.builder()
-                            .month(shortMonth(r.getId().getMonth())) // "Jan"
+                    .map(r -> TrainerYearlySummary.Month.builder()
+                            .month(shortMonth(r.getId().getMonth()))
                             .trainingSummaryDurationMinutes(r.getTotalDurationMinutes())
                             .build())
                     .toList();
 
-            years.add(TrainerYearlySummaryResponse.YearDto.builder()
+            years.add(TrainerYearlySummary.Year.builder()
                     .year(year)
                     .months(months)
                     .build());
         }
 
-        return TrainerYearlySummaryResponse.builder()
+        return TrainerYearlySummary.builder()
                 .trainerUsername(username)
                 .trainerFirstName(any.getFirstName())
                 .trainerLastName(any.getLastName())
@@ -155,6 +152,7 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
                 .years(years)
                 .build();
     }
+
 
     private String shortMonth(int monthNumber1to12) {
         return Month.of(monthNumber1to12).getDisplayName(TextStyle.SHORT, ENGLISH); // Jan, Feb, Mar...
