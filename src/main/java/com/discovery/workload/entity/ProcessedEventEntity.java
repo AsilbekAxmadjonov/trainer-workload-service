@@ -19,10 +19,10 @@ public class ProcessedEventEntity {
 
     @Id
     @Column(nullable = false, updatable = false, length = 64)
-    private String eventId; // idempotency key (UUID from training-service)
+    private String eventId;
 
     @Column(nullable = false)
-    private String trainingId; // business key (still useful for debugging/audit)
+    private String trainingId;
 
     @Column(nullable = false)
     private Instant processedAt;

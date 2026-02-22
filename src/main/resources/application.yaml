@@ -4,10 +4,14 @@ server:
 spring:
   application:
     name: workload-service
-app:
-  security:
-    jwt-secret: mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456
 
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+
+  jms:
+    pub-sub-domain: false
 
   datasource:
     url: jdbc:h2:mem:workloaddb
@@ -36,6 +40,10 @@ app:
       settings:
         web-allow-others: false
 
+app:
+  security:
+    jwt-secret: mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456
+
 eureka:
   client:
     service-url:
@@ -45,7 +53,7 @@ eureka:
   instance:
     prefer-ip-address: false
     hostname: localhost
-    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}  # ← ADD THIS
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
