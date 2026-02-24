@@ -10,10 +10,12 @@ import com.discovery.workload.model.TrainerYearlySummary;
 import com.discovery.workload.service.TrainerWorkloadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/workloads")
 @RequiredArgsConstructor
@@ -33,7 +35,6 @@ public class TrainerWorkloadController {
         return ResponseEntity.ok().build();
     }
 
-
     @GetMapping("/{username}/{year}/{month}")
     public ResponseEntity<MonthlySummaryResponse> getMonthly(
             @PathVariable String username,
@@ -42,6 +43,9 @@ public class TrainerWorkloadController {
     ) {
         MonthlySummary model = trainerWorkloadService.getMonthlySummary(username, year, month);
         MonthlySummaryResponse response = monthlySummaryMapper.toResponse(model);
+
+        log.debug("MonthlySummary model={}", model);
+        log.debug("MonthlySummary response={}", response);
         return ResponseEntity.ok(response);
     }
 

@@ -14,8 +14,8 @@ public class TrainerMonthlySummary {
     @EmbeddedId
     private TrainerMonthKey id;
 
-    @Column(name = "user_name")
-    private String userName;
+//    @Column(name = "user_name")
+//    private String userName;
 
     @Column(name = "first_name", nullable = false, length = 80)
     private String firstName;
