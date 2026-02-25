@@ -1,8 +1,6 @@
 package com.discovery.workload.service.impl;
 
-import com.discovery.workload.dto.MonthlySummaryResponse;
 import com.discovery.workload.dto.TrainerWorkloadRequest;
-import com.discovery.workload.dto.TrainerYearlySummaryResponse;
 import com.discovery.workload.entity.ProcessedEventEntity;
 import com.discovery.workload.entity.TrainerMonthKey;
 import com.discovery.workload.entity.TrainerMonthlySummary;

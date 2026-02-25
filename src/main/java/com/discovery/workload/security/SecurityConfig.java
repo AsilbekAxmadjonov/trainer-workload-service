@@ -27,9 +27,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/workloads/test").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/workloads/events").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/workloads/events").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/api/v1/workloads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/workloads/**").authenticated()
 
                         .anyRequest().permitAll()
                 )
