@@ -1,9 +1,11 @@
 package com.discovery.workload.messaging;
 
+import com.discovery.workload.filter.TransactionIdFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.discovery.workload.service.TrainerWorkloadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
@@ -17,22 +19,46 @@ public class WorkloadEventListener {
 
     @JmsListener(destination = Queues.WORKLOAD_EVENTS)
     public void onMessage(String json) {
+
+        WorkloadEventMessage message = null;
+
         try {
-            WorkloadEventMessage message = objectMapper.readValue(json, WorkloadEventMessage.class);
+            message = objectMapper.readValue(json, WorkloadEventMessage.class);
 
             if (message == null || message.getRequest() == null) {
-                log.error("Invalid message: {}", json);
-                return;
+                throw new IllegalArgumentException("Invalid message payload");
             }
 
-            log.info("Consumed JMS eventId={} trainingId={}",
-                    message.getEventId(),
-                    message.getRequest().getTrainingId());
+            if (message.getEventId() == null || message.getEventId().isBlank()) {
+                throw new IllegalArgumentException("Missing eventId");
+            }
 
-            trainerWorkloadService.applyEvent(message.getEventId(), message.getRequest());
+            if (message.getTransactionId() != null) {
+                MDC.put(TransactionIdFilter.MDC_KEY, message.getTransactionId());
+            }
+
+            log.info(
+                    "Consumed JMS eventId={} trainingId={} txId={}",
+                    message.getEventId(),
+                    message.getRequest().getTrainingId(),
+                    message.getTransactionId()
+            );
+
+            trainerWorkloadService.applyEvent(
+                    message.getEventId(),
+                    message.getRequest()
+            );
 
         } catch (Exception e) {
-            log.error("Failed to parse message: {}", json, e);
+            log.error(
+                    "Failed to process JMS message eventId={}",
+                    message != null ? message.getEventId() : "unknown",
+                    e
+            );
+            throw new RuntimeException("Failed to process workload event", e);
+
+        } finally {
+            MDC.clear();
         }
     }
 }

@@ -43,7 +43,7 @@ public class TrainerWorkloadServiceImpl implements TrainerWorkloadService {
 
         if (processedEventRepository.existsById(eventId)) {
             log.info("Duplicate event ignored. eventId={}", eventId);
-            return; // idempotent: do nothing
+            return;
         }
 
         LocalDate date = request.getTrainingDate();

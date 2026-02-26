@@ -9,5 +9,6 @@ import lombok.*;
 @Builder
 public class WorkloadEventMessage {
     private String eventId;
+    private String transactionId;
     private TrainerWorkloadRequest request;
 }
