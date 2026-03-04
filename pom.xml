@@ -162,6 +162,12 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+
+                    <compilerArgs>
+                        <!-- MapStruct default Spring component model -->
+                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
+                    </compilerArgs>
+
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>
