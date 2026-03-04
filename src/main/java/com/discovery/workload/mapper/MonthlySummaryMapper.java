@@ -5,10 +5,7 @@ import com.discovery.workload.model.MonthlySummary;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(
-        componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.ERROR
-)
+@Mapper
 public interface MonthlySummaryMapper {
     MonthlySummaryResponse toResponse(MonthlySummary model);
 }

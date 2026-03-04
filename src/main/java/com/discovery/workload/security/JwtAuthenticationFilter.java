@@ -35,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 String username = tokenService.getUsername(jwt);
 
-                // OPTIONAL roles:
                 List<SimpleGrantedAuthority> authorities = tokenService.getRoles(jwt).stream()
                         .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
                         .map(SimpleGrantedAuthority::new)
@@ -46,7 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             } catch (Exception ex) {
                 SecurityContextHolder.clearContext();
-                // Let SecurityConfig handle unauthorized (401)
             }
         }
 

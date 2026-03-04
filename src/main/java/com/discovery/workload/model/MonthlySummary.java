@@ -6,11 +6,11 @@ import lombok.Value;
 @Value
 @Builder
 public class MonthlySummary {
-    String username;
-    String firstName;
-    String lastName;
-    boolean active;
-    int year;
-    int month;
-    int totalDurationMinutes;
+    private String username;
+    private String firstName;
+    private String lastName;
+    private boolean active;
+    private int year;
+    private int month;
+    private int totalDurationMinutes;
 }

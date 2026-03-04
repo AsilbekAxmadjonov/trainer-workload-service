@@ -31,7 +31,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/v1/workloads/**").authenticated()
 
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

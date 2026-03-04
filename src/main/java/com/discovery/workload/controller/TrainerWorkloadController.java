@@ -58,8 +58,6 @@ public class TrainerWorkloadController {
         return ResponseEntity.ok(response);
     }
 
-
-
     @GetMapping("/test")
     public String test() {
         return "workload-service OK";
