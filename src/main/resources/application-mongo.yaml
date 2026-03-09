@@ -1,0 +1,7 @@
+spring:
+  config:
+    activate:
+      on-profile: mongo
+
+  mongodb:
+    uri: mongodb://localhost:27017/workloaddb
