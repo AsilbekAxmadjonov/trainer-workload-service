@@ -1,7 +1,9 @@
 package com.discovery.workload.mongoDb.document;
 
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -27,6 +29,9 @@ public class TrainerSummaryDocument {
     @Builder.Default
     private List<YearSummaryDocument> years = new ArrayList<>();
 
+    @CreatedDate
     private Instant createdAt;
+
+    @LastModifiedDate
     private Instant updatedAt;
 }
