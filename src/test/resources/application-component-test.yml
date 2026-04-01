@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: workload-service-test
+
+  data:
+    mongodb:
+      database: workload_component_test
+
+app:
+  security:
+    jwt-secret: mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    root: INFO
