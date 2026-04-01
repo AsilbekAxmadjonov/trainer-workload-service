@@ -1,0 +1,52 @@
+cyber@MacBookAir workload-service % docker logs workload-service --tail 50
+        at java.base/sun.nio.ch.NioSocketImpl.connect(Unknown Source) ~[na:na]
+        at java.base/java.net.SocksSocketImpl.connect(Unknown Source) ~[na:na]
+        at java.base/java.net.Socket.connect(Unknown Source) ~[na:na]
+        at org.apache.activemq.transport.tcp.TcpTransport.connect(TcpTransport.java:526) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.tcp.TcpTransport.doStart(TcpTransport.java:489) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.util.ServiceSupport.start(ServiceSupport.java:55) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.AbstractInactivityMonitor.start(AbstractInactivityMonitor.java:172) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.InactivityMonitor.start(InactivityMonitor.java:52) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.WireFormatNegotiator.start(WireFormatNegotiator.java:72) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.ActiveMQConnectionFactory.createActiveMQConnection(ActiveMQConnectionFactory.java:403) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        ... 9 common frames omitted
+
+2026-04-01T07:45:43.028Z ERROR 1 --- [workload-service] [ntContainer#0-1] o.s.j.l.DefaultMessageListenerContainer  : Could not refresh JMS Connection for destination 'workload.events.queue' - retrying using FixedBackOffExecution[interval=5000, currentAttempts=5, maxAttempts=unlimited]. Cause: Could not connect to broker URL: tcp://activemq:61616. Reason: java.net.UnknownHostException: activemq
+2026-04-01T07:45:48.085Z  INFO 1 --- [workload-service] [ntContainer#0-1] o.s.j.c.CachingConnectionFactory         : Encountered a JMSException - resetting the underlying JMS Connection
+
+jakarta.jms.JMSException: Could not connect to broker URL: tcp://activemq:61616. Reason: java.net.ConnectException: Connection refused
+        at org.apache.activemq.util.JMSExceptionSupport.create(JMSExceptionSupport.java:49) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.ActiveMQConnectionFactory.createActiveMQConnection(ActiveMQConnectionFactory.java:423) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.ActiveMQConnectionFactory.createActiveMQConnection(ActiveMQConnectionFactory.java:353) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.ActiveMQConnectionFactory.createConnection(ActiveMQConnectionFactory.java:245) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.springframework.jms.support.JmsAccessor.createConnection(JmsAccessor.java:208) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at org.springframework.jms.listener.AbstractJmsListeningContainer.createSharedConnection(AbstractJmsListeningContainer.java:432) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at org.springframework.jms.listener.AbstractJmsListeningContainer.refreshSharedConnection(AbstractJmsListeningContainer.java:414) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at org.springframework.jms.listener.DefaultMessageListenerContainer.refreshConnectionUntilSuccessful(DefaultMessageListenerContainer.java:1147) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at org.springframework.jms.listener.DefaultMessageListenerContainer.recoverAfterListenerSetupFailure(DefaultMessageListenerContainer.java:1121) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:1317) ~[spring-jms-7.0.3.jar!/:7.0.3]
+        at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
+Caused by: java.net.ConnectException: Connection refused
+        at java.base/sun.nio.ch.Net.pollConnect(Native Method) ~[na:na]
+        at java.base/sun.nio.ch.Net.pollConnectNow(Unknown Source) ~[na:na]
+        at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(Unknown Source) ~[na:na]
+        at java.base/sun.nio.ch.NioSocketImpl.connect(Unknown Source) ~[na:na]
+        at java.base/java.net.SocksSocketImpl.connect(Unknown Source) ~[na:na]
+        at java.base/java.net.Socket.connect(Unknown Source) ~[na:na]
+        at org.apache.activemq.transport.tcp.TcpTransport.connect(TcpTransport.java:526) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.tcp.TcpTransport.doStart(TcpTransport.java:489) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.util.ServiceSupport.start(ServiceSupport.java:55) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.AbstractInactivityMonitor.start(AbstractInactivityMonitor.java:172) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.InactivityMonitor.start(InactivityMonitor.java:52) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.WireFormatNegotiator.start(WireFormatNegotiator.java:72) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.transport.TransportFilter.start(TransportFilter.java:64) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        at org.apache.activemq.ActiveMQConnectionFactory.createActiveMQConnection(ActiveMQConnectionFactory.java:403) ~[activemq-client-6.1.8.jar!/:6.1.8]
+        ... 9 common frames omitted
+
+2026-04-01T07:45:48.103Z ERROR 1 --- [workload-service] [ntContainer#0-1] o.s.j.l.DefaultMessageListenerContainer  : Could not refresh JMS Connection for destination 'workload.events.queue' - retrying using FixedBackOffExecution[interval=5000, currentAttempts=6, maxAttempts=unlimited]. Cause: Could not connect to broker URL: tcp://activemq:61616. Reason: java.net.ConnectException: Connection refused
+cyber@MacBookAir workload-service %

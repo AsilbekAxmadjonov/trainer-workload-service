@@ -1,0 +1,39 @@
+services:
+
+  workload-service:
+    build: .
+    container_name: workload-service
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: mongo,docker
+      JWT_SECRET: ${JWT_SECRET:-mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - shared-network
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shared-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  shared-network:
+    external: true
