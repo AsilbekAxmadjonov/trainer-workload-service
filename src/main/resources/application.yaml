@@ -2,9 +2,6 @@ server:
   port: 8082
 
 spring:
-  profiles:
-    active: mongo
-
   application:
     name: workload-service
 
@@ -18,7 +15,7 @@ spring:
 
 app:
   security:
-    jwt-secret: mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456
+    jwt-secret: ${JWT_SECRET:mySecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123456}
 
 eureka:
   client:
@@ -29,7 +26,7 @@ eureka:
   instance:
     prefer-ip-address: false
     hostname: localhost
-    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+    instance-id: ${spring.application.name}:${server.port}
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
@@ -37,7 +34,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,mappings,metrics
+        include: health,info,mappings,metrics,prometheus
   endpoint:
     health:
       show-details: always

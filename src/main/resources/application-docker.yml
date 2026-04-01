@@ -1,0 +1,14 @@
+spring:
+  mongodb:
+    uri: mongodb://mongodb:27017/workloaddb
+
+  activemq:
+    broker-url: tcp://activemq:61616
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+  instance:
+    hostname: workload-service
