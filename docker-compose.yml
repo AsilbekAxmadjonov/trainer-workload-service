@@ -12,8 +12,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-      activemq:
-        condition: service_healthy
+    networks:
+      - shared-network
 
   mongodb:
     image: mongo:7
@@ -28,20 +28,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  activemq:
-    image: apache/activemq-classic:latest
-    container_name: activemq
-    restart: always
-    ports:
-      - "61616:61616"
-      - "8161:8161"
-    healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://admin:admin@localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,service=Health || exit 1" ]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+    networks:
+      - shared-network
 
 volumes:
   mongodb_data:
+
+networks:
+  shared-network:
+    external: true
